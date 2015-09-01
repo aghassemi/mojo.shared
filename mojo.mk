@@ -59,6 +59,10 @@ define MOJOM_GEN
 	$(MOJO_DIR)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -d . -o $2 -g $3
 endef
 
+define MOJO_RUN
+	$(MOJO_DIR)/src/mojo/devtools/common/mojo_run --config-file $(PWD)/mojoconfig $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
+endef
+
 # Builds the library that Mojo services must be linked with.
 $(MOJO_SHARED_LIB): | mojo-env-check
 	mkdir -p $(dir $@)
