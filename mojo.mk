@@ -1,3 +1,7 @@
+# Copyright 2015 The Vanadium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 SHELL := /bin/bash -euo pipefail
 V23_GOPATH := $(shell echo `v23 run env | grep GOPATH | cut -d\= -f2`)
 ifdef ANDROID
@@ -84,5 +88,3 @@ ifeq ($(wildcard $(ANDROID_NDK)),)
 	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "v23 profile install android")
 endif
 endif
-
-
