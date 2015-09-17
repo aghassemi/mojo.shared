@@ -12,7 +12,7 @@ ifdef ANDROID
 	export GOARCH := arm
 	export GOARM := 7
 
-	ANDROID_NDK := $(V23_ROOT)/third_party/android/ndk-toolchain
+	ANDROID_NDK := $(JIRI_ROOT)/third_party/android/ndk-toolchain
 
 	export CC := $(ANDROID_NDK)/bin/arm-linux-androideabi-gcc
 	export CXX := $(ANDROID_NDK)/bin/arm-linux-androideabi-g++
@@ -77,8 +77,8 @@ mojo-env-check:
 ifndef MOJO_DIR
 	$(error MOJO_DIR is not set)
 endif
-ifndef V23_ROOT
-	$(error V23_ROOT is not set)
+ifndef JIRI_ROOT
+	$(error JIRI_ROOT is not set)
 endif
 ifeq ($(wildcard $(MOJO_BUILD_DIR)),)
 	$(error ERROR: $(MOJO_BUILD_DIR) does not exist.  Please see README.md for instructions on compiling Mojo resources.)
