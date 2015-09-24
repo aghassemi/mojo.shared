@@ -68,7 +68,7 @@ define MOJO_RUN
 endef
 
 # Builds the library that Mojo services must be linked with.
-$(MOJO_SHARED_LIB): | mojo-env-check
+$(MOJO_SHARED_LIB): $(MOJO_BUILD_DIR)/obj/mojo/public/platform/native/system.system_thunks.o | mojo-env-check
 	mkdir -p $(dir $@)
 	ar rcs $@ $(MOJO_BUILD_DIR)/obj/mojo/public/platform/native/system.system_thunks.o
 
