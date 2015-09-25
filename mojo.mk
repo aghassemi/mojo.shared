@@ -4,6 +4,7 @@
 
 SHELL := /bin/bash -euo pipefail
 V23_GOPATH := $(shell echo `v23 run env | grep GOPATH | cut -d\= -f2`)
+
 ifdef ANDROID
 	# Configure compiler and linker for Android.
 	export GOROOT := $(MOJO_DIR)/src/third_party/go/tool/android_arm
