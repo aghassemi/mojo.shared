@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 
 SHELL := /bin/bash -euo pipefail
-V23_GOPATH := $(shell echo `v23 run env | grep GOPATH | cut -d\= -f2`)
+V23_GOPATH := $(shell echo `jiri run env | grep GOPATH | cut -d\= -f2`)
 
 ifdef ANDROID
 	# Configure compiler and linker for Android.
@@ -86,6 +86,6 @@ ifeq ($(wildcard $(MOJO_BUILD_DIR)),)
 endif
 ifdef ANDROID
 ifeq ($(wildcard $(ANDROID_NDK)),)
-	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "v23 profile install android")
+	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "jiri profile install android")
 endif
 endif
