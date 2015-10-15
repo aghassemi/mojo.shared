@@ -57,11 +57,12 @@ endef
 
 # Generates go bindings from .mojom file.
 # $1 is input filename.
-# $2 is output directory.
-# $3 is language (go, dart, ...).
+# $2 is root directory containing mojom files.
+# $3 is output directory.
+# $4 is language (go, dart, ...).
 define MOJOM_GEN
-	mkdir -p $2
-	$(MOJO_DIR)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -d . -o $2 -g $3
+	mkdir -p $3
+	$(MOJO_DIR)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -d $2 -o $3 -g $4
 endef
 
 define MOJO_RUN
