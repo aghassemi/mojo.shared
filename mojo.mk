@@ -55,6 +55,16 @@ define MOGO_BUILD
 	rm -f $(basename $2).h
 endef
 
+# Runs Go tests with mojo libraries
+# $1 is input package pattern
+define MOGO_TEST
+	GOPATH="$(GOPATH)" \
+	CGO_CFLAGS="-I$(MOJO_DIR)/src $(CGO_CFLAGS)" \
+	CGO_CXXFLAGS="-I$(MOJO_DIR)/src $(CGO_CXXFLAGS)" \
+	CGO_LDFLAGS="-L$(dir $(MOJO_SHARED_LIB)) -lsystem_thunk $(CGO_LDFLAGS)" \
+	$(GOROOT)/bin/go test $1
+endef
+
 # Generates go bindings from .mojom file.
 # $1 is input filename.
 # $2 is root directory containing mojom files.
