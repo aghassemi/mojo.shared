@@ -7,7 +7,8 @@ V23_GOPATH := $(shell echo `jiri run env | grep GOPATH | cut -d\= -f2`)
 
 ifdef ANDROID
 	# Configure compiler and linker for Android.
-	export GOROOT := $(MOJO_DIR)/src/third_party/go/tool/android_arm
+	# TODO(aghassemi): Switch back to Go tool chain from Mojo when Mojo updates their Go tool chain to include this commit.
+	export GOROOT := $(JIRI_ROOT)/profiles/go/arm_android_armv7/492a62e945555bbf94a6f9dd6d430f712738c5e0
 	export CGO_ENABLED := 1
 	export GOOS := android
 	export GOARCH := arm
@@ -97,6 +98,9 @@ ifeq ($(wildcard $(MOJO_BUILD_DIR)),)
 endif
 ifdef ANDROID
 ifeq ($(wildcard $(ANDROID_NDK)),)
-	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "jiri profile install android")
+	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "jiri v23-profile install android")
+endif
+ifeq ($(wildcard $(GOROOT)),)
+	$(error ERROR: $(GOROOT) does not exist.  Please install java profile with "jiri v23-profile install java")
 endif
 endif
