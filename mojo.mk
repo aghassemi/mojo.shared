@@ -7,14 +7,15 @@ V23_GOPATH := $(shell echo `jiri run env | grep GOPATH | cut -d\= -f2`)
 
 ifdef ANDROID
 	# Configure compiler and linker for Android.
-	# TODO(aghassemi): Switch back to Go tool chain from Mojo when Mojo updates their Go tool chain to include this commit.
+	# TODO(aghassemi): Switch back to Mojo's Go toolchain once Mojo team updates
+	# it to include this commit.
 	export GOROOT := $(JIRI_ROOT)/profiles/go/arm_android_armv7/492a62e945555bbf94a6f9dd6d430f712738c5e0
 	export CGO_ENABLED := 1
 	export GOOS := android
 	export GOARCH := arm
 	export GOARM := 7
 
-	ANDROID_NDK := $(JIRI_ROOT)/third_party/android/ndk-toolchain
+	ANDROID_NDK := $(JIRI_ROOT)/profiles/android/ndk-toolchain
 
 	export CC := $(ANDROID_NDK)/bin/arm-linux-androideabi-gcc
 	export CXX := $(ANDROID_NDK)/bin/arm-linux-androideabi-g++
