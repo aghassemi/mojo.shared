@@ -3,68 +3,49 @@
 # license that can be found in the LICENSE file.
 
 SHELL := /bin/bash -euo pipefail
-V23_GOPATH := $(shell echo `jiri run env | grep GOPATH | cut -d\= -f2`)
 
-ifdef ANDROID
-	# Configure compiler and linker for Android.
-	# TODO(aghassemi): Switch back to Mojo's Go toolchain once Mojo team updates
-	# it to include this commit.
-	export GOROOT := $(JIRI_ROOT)/profiles/go/arm_android_armv7/492a62e945555bbf94a6f9dd6d430f712738c5e0
-	export CGO_ENABLED := 1
-	export GOOS := android
-	export GOARCH := arm
-	export GOARM := 7
-
-	ANDROID_NDK := $(JIRI_ROOT)/profiles/android/ndk-toolchain
-
-	export CC := $(ANDROID_NDK)/bin/arm-linux-androideabi-gcc
-	export CXX := $(ANDROID_NDK)/bin/arm-linux-androideabi-g++
-
-	MOJO_ANDROID_FLAGS := --android
-	MOJO_BUILD_DIR := $(MOJO_DIR)/src/out/android_Debug
-	MOJO_SHARED_LIB := $(PWD)/gen/lib/android/libsystem_thunk.a
-	MOJO_SHELL_PATH := $(MOJO_BUILD_DIR)/apks/MojoShell.apk
+ifdef USE_MOJO_DEV_PROFILE
+	MOJO_PROFILE := mojo-dev
 else
-	# Configure compiler and linker for Linux.
-	export GOROOT := $(MOJO_DIR)/src/third_party/go/tool/linux_amd64
-
-	MOJO_BUILD_DIR := $(MOJO_DIR)/src/out/Debug
-	MOJO_SHARED_LIB := $(PWD)/gen/lib/linux_amd64/libsystem_thunk.a
-	MOJO_SHELL_PATH := $(MOJO_BUILD_DIR)/mojo_shell
+	MOJO_PROFILE := mojo
 endif
 
-GOPATH := $(V23_GOPATH):$(MOJO_DIR):$(MOJO_DIR)/third_party/go:$(MOJO_BUILD_DIR)/gen/go:$(PWD)/go:$(PWD)/gen/go
+ifdef ANDROID
+	TARGET := arm-android
+	MOJO_ANDROID_FLAGS := --android
+
+	# Put adb in front of $PATH.
+	export PATH := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) ANDROID_PLATFORM_TOOLS=):$(PATH)
+else
+	TARGET := amd64-linux
+endif
+
+MOJO_DEVTOOLS := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_DEVTOOLS=)
+MOJO_SDK := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SDK=)
+MOJO_SERVICES := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SERVICES=)
+MOJO_SHARED_LIB := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SYSTEM_THUNKS=)
+MOJO_SHELL := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SHELL=)
+
+export GOPATH := $(PWD)/go:$(PWD)/gen/go
 
 # NOTE(nlacasse): Running Go Mojo services requires passing the
 # --enable-multiprocess flag to mojo_shell.  This is because the Go runtime is
 # very large, and can interfere with C++ memory if they are in the same
 # process.
-MOJO_SHELL_FLAGS := -v --enable-multiprocess \
-	--config-alias MOJO_BUILD_DIR=$(MOJO_BUILD_DIR)
-
-LDFLAGS := -shared
+MOJO_SHELL_FLAGS := -v --enable-multiprocess
 
 # Compiles a Go program and links against the Mojo C library.
 # $1 is input filename.
 # $2 is output filename.
 define MOGO_BUILD
 	mkdir -p $(dir $2)
-	GOPATH="$(GOPATH)" \
-	CGO_CFLAGS="-I$(MOJO_DIR)/src $(CGO_CFLAGS)" \
-	CGO_CXXFLAGS="-I$(MOJO_DIR)/src $(CGO_CXXFLAGS)" \
-	CGO_LDFLAGS="-L$(dir $(MOJO_SHARED_LIB)) -lsystem_thunk $(CGO_LDFLAGS)" \
-	$(GOROOT)/bin/go build -o $2 -tags=mojo -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
-	rm -f $(basename $2).h
+	jiri go -v -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags=mojo -ldflags=-shared -buildmode=c-shared $1
 endef
 
 # Runs Go tests with mojo libraries
 # $1 is input package pattern
 define MOGO_TEST
-	GOPATH="$(GOPATH)" \
-	CGO_CFLAGS="-I$(MOJO_DIR)/src $(CGO_CFLAGS)" \
-	CGO_CXXFLAGS="-I$(MOJO_DIR)/src $(CGO_CXXFLAGS)" \
-	CGO_LDFLAGS="-L$(dir $(MOJO_SHARED_LIB)) -lsystem_thunk $(CGO_LDFLAGS)" \
-	$(GOROOT)/bin/go test $1
+	jiri go -profiles=$(MOJO_PROFILE),base test $1
 endef
 
 # Generates go bindings from .mojom file.
@@ -74,34 +55,18 @@ endef
 # $4 is language (go, dart, ...).
 define MOJOM_GEN
 	mkdir -p $3
-	$(MOJO_DIR)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4
+	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $(MOJO_SDK)/src -I $2 -d $2 -o $3 -g $4
 endef
 
 define MOJO_RUN
-	$(MOJO_DIR)/src/mojo/devtools/common/mojo_run --config-file $(PWD)/mojoconfig $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
+	$(MOJO_DEVTOOLS)/mojo_run --config-file $(PWD)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
 endef
-
-# Builds the library that Mojo services must be linked with.
-$(MOJO_SHARED_LIB): $(MOJO_BUILD_DIR)/obj/mojo/public/platform/native/system.system_thunks.o | mojo-env-check
-	mkdir -p $(dir $@)
-	ar rcs $@ $(MOJO_BUILD_DIR)/obj/mojo/public/platform/native/system.system_thunks.o
 
 .PHONY: mojo-env-check
 mojo-env-check:
-ifndef MOJO_DIR
-	$(error MOJO_DIR is not set)
-endif
 ifndef JIRI_ROOT
 	$(error JIRI_ROOT is not set)
 endif
-ifeq ($(wildcard $(MOJO_BUILD_DIR)),)
-	$(error ERROR: $(MOJO_BUILD_DIR) does not exist.  Please see README.md for instructions on compiling Mojo resources.)
-endif
-ifdef ANDROID
-ifeq ($(wildcard $(ANDROID_NDK)),)
-	$(error ERROR: $(ANDROID_NDK) does not exist.  Please install android profile with "jiri v23-profile install android")
-endif
-ifeq ($(wildcard $(GOROOT)),)
-	$(error ERROR: $(GOROOT) does not exist.  Please install java profile with "jiri v23-profile install java")
-endif
+ifeq ($(shell jiri v23-profile list $(MOJO_PROFILE) | grep $(TARGET)),)
+	$(error profile $(MOJO_PROFILE) not installed for target $(TARGET). Run "jiri v23-profile install --target=$(TARGET) $(MOJO_PROFILE)")
 endif
