@@ -20,6 +20,9 @@ else
 	TARGET := amd64-linux
 endif
 
+# Add Dart SDK to path.
+PATH := $(shell jiri v23-profile env --profiles=dart DART_SDK=)/bin:$(PATH)
+
 MOJO_DEVTOOLS := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_DEVTOOLS=)
 MOJO_SDK := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SDK=)
 MOJO_SERVICES := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SERVICES=)
@@ -66,6 +69,9 @@ endef
 mojo-env-check:
 ifndef JIRI_ROOT
 	$(error JIRI_ROOT is not set)
+endif
+ifeq ($(shell jiri v23-profile list dart),)
+	$(error dart profile not installed. Run "jiri v23-profile install dart")
 endif
 ifeq ($(shell jiri v23-profile list $(MOJO_PROFILE) | grep $(TARGET)),)
 	$(error profile $(MOJO_PROFILE) not installed for target $(TARGET). Run "jiri v23-profile install --target=$(TARGET) $(MOJO_PROFILE)")
