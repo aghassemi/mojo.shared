@@ -23,6 +23,7 @@ endif
 # Add Dart SDK to path.
 PATH := $(shell jiri v23-profile env --profiles=dart DART_SDK=)/bin:$(PATH)
 
+# Set variables from environment based on profile and target.
 MOJO_DEVTOOLS := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_DEVTOOLS=)
 MOJO_SDK := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SDK=)
 MOJO_SERVICES := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SERVICES=)
