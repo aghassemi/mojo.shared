@@ -30,7 +30,7 @@ MOJO_SERVICES := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --targe
 MOJO_SHARED_LIB := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SYSTEM_THUNKS=)
 MOJO_SHELL := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SHELL=)
 
-export GOPATH := $(PWD)/go:$(PWD)/gen/go
+export GOPATH := $(GOPATH):$(CURDIR)/go:$(CURDIR)/gen/go
 
 # NOTE(nlacasse): Running Go Mojo services requires passing the
 # --enable-multiprocess flag to mojo_shell.  This is because the Go runtime is
@@ -63,7 +63,7 @@ define MOJOM_GEN
 endef
 
 define MOJO_RUN
-	$(MOJO_DEVTOOLS)/mojo_run --config-file $(PWD)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
+	$(MOJO_DEVTOOLS)/mojo_run --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
 endef
 
 .PHONY: mojo-env-check
