@@ -20,6 +20,22 @@ else
 	TARGET := amd64-linux
 endif
 
+LDFLAGS := -shared
+ifdef RELEASE
+	# Configure ldflags to omit debug information.
+	# See https://golang.org/doc/gdb
+	#
+	# NOTE(nlacasse): The Go team recommends passing "-w" to strip debug
+	# information instead of "-s" (https://codereview.appspot.com/88030045).
+	# It appears that "-s" used to strip the pclntab and thus mangle panic
+	# traces, but that is no longer the behavior (as of
+	# https://codereview.appspot.com/88030045).
+	# I've left the "-s" for now, since it seems to work and panic traces look
+	# fine, but if other issues arise we should switch to "-w".
+	LDFLAGS += -s
+endif
+
+
 # Add Dart SDK to path.
 PATH := $(shell jiri v23-profile env --profiles=dart DART_SDK=)/bin:$(PATH)
 
@@ -43,7 +59,7 @@ MOJO_SHELL_FLAGS := -v --enable-multiprocess
 # $2 is output filename.
 define MOGO_BUILD
 	mkdir -p $(dir $2)
-	jiri go -v -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags=mojo -ldflags=-shared -buildmode=c-shared $1
+	jiri go -v -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags=mojo -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
 endef
 
 # Runs Go tests with mojo libraries
