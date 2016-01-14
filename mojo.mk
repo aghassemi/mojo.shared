@@ -59,7 +59,7 @@ MOJO_SHELL_FLAGS := -v --enable-multiprocess
 # $2 is output filename.
 define MOGO_BUILD
 	mkdir -p $(dir $2)
-	jiri go -v -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags=mojo -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
+	jiri go -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags="mojo include_mojo_cgo" -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
 endef
 
 # Runs Go tests with mojo libraries
