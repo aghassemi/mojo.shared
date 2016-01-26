@@ -73,6 +73,7 @@ endef
 # $2 is root directory containing mojom files.
 # $3 is output directory.
 # $4 is language (go, dart, ...).
+# $5 is for any extra flags you want to add, like "--generate-type-info".
 define MOJOM_GEN
 	mkdir -p $3
 	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4 $5
