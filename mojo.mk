@@ -75,7 +75,7 @@ endef
 # $4 is language (go, dart, ...).
 define MOJOM_GEN
 	mkdir -p $3
-	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4
+	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4 $5
 endef
 
 define MOJO_RUN
