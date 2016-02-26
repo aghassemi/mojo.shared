@@ -88,9 +88,12 @@ mojo-env-check:
 ifndef JIRI_ROOT
 	$(error JIRI_ROOT is not set)
 endif
-ifeq ($(shell jiri v23-profile list dart),)
+# TODO(aghassemi): Switch to profile-v23 when mojo is available via the new profiles
+# TODO(aghassemi): v23-profile list or profile-v23 available no longer print out
+# the targets, we need that to ensure profile is installed for the right target.
+ifeq ($(shell jiri v23-profile list | grep dart),)
 	$(error dart profile not installed. Run "jiri v23-profile install dart")
 endif
-ifeq ($(shell jiri v23-profile list $(MOJO_PROFILE) | grep $(TARGET)),)
-	$(error profile $(MOJO_PROFILE) not installed for target $(TARGET). Run "jiri v23-profile install --target=$(TARGET) $(MOJO_PROFILE)")
+ifeq ($(shell jiri v23-profile list | grep $(MOJO_PROFILE)),)
+	$(error profile $(MOJO_PROFILE) not installed. Run "jiri v23-profile install --target=$(TARGET) $(MOJO_PROFILE)")
 endif
