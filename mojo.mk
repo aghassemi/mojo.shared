@@ -79,7 +79,10 @@ define MOJOM_GEN
 	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4 $5
 endef
 
+# On Linux we need to use a different $HOME directory for each mojo run
+# to avoid collision of the cache storage.
 define MOJO_RUN
+	set -e; HOME=$$(mktemp -d); trap "rm -rf $$HOME" EXIT; \
 	$(MOJO_DEVTOOLS)/mojo_run --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
 endef
 
