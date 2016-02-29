@@ -54,20 +54,6 @@ export GOPATH := $(GOPATH):$(CURDIR)/go:$(CURDIR)/gen/go
 # process.
 MOJO_SHELL_FLAGS := -v --enable-multiprocess
 
-# Compiles a Go program and links against the Mojo C library.
-# $1 is input filename.
-# $2 is output filename.
-define MOGO_BUILD
-	mkdir -p $(dir $2)
-	jiri go -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags="mojo include_mojo_cgo" -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
-endef
-
-# Runs Go tests with mojo libraries
-# $1 is input package pattern
-define MOGO_TEST
-	jiri go -profiles=$(MOJO_PROFILE),base test $1
-endef
-
 # Generates go bindings from .mojom file.
 # $1 is input filename.
 # $2 is root directory containing mojom files.
@@ -79,11 +65,31 @@ define MOJOM_GEN
 	$(MOJO_SDK)/src/mojo/public/tools/bindings/mojom_bindings_generator.py $1 -I $2 -d $2 -o $3 -g $4 $5
 endef
 
+# Compiles a Go program and links against the Mojo C library.
+# $1 is input filename.
+# $2 is output filename.
+define MOGO_BUILD
+	mkdir -p $(dir $2)
+	jiri go -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags="mojo include_mojo_cgo" -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
+endef
+
+# Runs Go tests with mojo libraries.
+# $1 is input package pattern
+define MOGO_TEST
+	jiri go -profiles=$(MOJO_PROFILE),base test $1
+endef
+
 # On Linux we need to use a different $HOME directory for each mojo run
 # to avoid collision of the cache storage.
 define MOJO_RUN
 	set -e; HOME=$$(mktemp -d); trap "rm -rf $$HOME" EXIT; \
 	$(MOJO_DEVTOOLS)/mojo_run --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
+endef
+
+# Runs mojo app tests.
+# $1 is apptest list filename.
+define MOJO_APPTEST
+	$(MOJO_DEVTOOLS)/mojo_test --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
 endef
 
 .PHONY: mojo-env-check
