@@ -5,9 +5,9 @@
 SHELL := /bin/bash -euo pipefail
 
 ifdef USE_MOJO_DEV_PROFILE
-	MOJO_PROFILE := mojo-dev
+	MOJO_PROFILE := v23:mojo-dev
 else
-	MOJO_PROFILE := mojo
+	MOJO_PROFILE := v23:mojo
 endif
 
 ifdef ANDROID
@@ -15,7 +15,7 @@ ifdef ANDROID
 	MOJO_ANDROID_FLAGS := --android
 
 	# Put adb in front of $PATH.
-	export PATH := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) ANDROID_PLATFORM_TOOLS=):$(PATH)
+	export PATH := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) ANDROID_PLATFORM_TOOLS=):$(PATH)
 else
 	TARGET := amd64-linux
 endif
@@ -37,14 +37,14 @@ endif
 
 
 # Add Dart SDK to path.
-PATH := $(shell jiri v23-profile env --profiles=dart DART_SDK=)/bin:$(PATH)
+PATH := $(shell jiri profile env --profiles=v23:dart DART_SDK=)/bin:$(PATH)
 
 # Set variables from environment based on profile and target.
-MOJO_DEVTOOLS := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_DEVTOOLS=)
-MOJO_SDK := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SDK=)
-MOJO_SERVICES := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SERVICES=)
-MOJO_SHARED_LIB := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SYSTEM_THUNKS=)
-MOJO_SHELL := $(shell jiri v23-profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SHELL=)
+MOJO_DEVTOOLS := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_DEVTOOLS=)
+MOJO_SDK := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SDK=)
+MOJO_SERVICES := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SERVICES=)
+MOJO_SHARED_LIB := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SYSTEM_THUNKS=)
+MOJO_SHELL := $(shell jiri profile env --profiles=$(MOJO_PROFILE) --target=$(TARGET) MOJO_SHELL=)
 
 export GOPATH := $(GOPATH):$(CURDIR)/go:$(CURDIR)/gen/go
 
@@ -70,13 +70,13 @@ endef
 # $2 is output filename.
 define MOGO_BUILD
 	mkdir -p $(dir $2)
-	jiri go -profiles=$(MOJO_PROFILE),base -target=$(TARGET) build -o $2 -tags="mojo include_mojo_cgo" -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
+	jiri go -profiles=$(MOJO_PROFILE),v23:base -target=$(TARGET) build -o $2 -tags="mojo include_mojo_cgo" -ldflags="$(LDFLAGS)" -buildmode=c-shared $1
 endef
 
 # Runs Go tests with mojo libraries.
 # $1 is input package pattern
 define MOGO_TEST
-	jiri go -profiles=$(MOJO_PROFILE),base test $1
+	jiri go -profiles=$(MOJO_PROFILE),v23:base test $1
 endef
 
 # On Linux we need to use a different $HOME directory for each mojo run
@@ -100,9 +100,9 @@ endif
 # TODO(aghassemi): Switch to profile-v23 when mojo is available via the new profiles
 # TODO(aghassemi): v23-profile list or profile-v23 available no longer print out
 # the targets, we need that to ensure profile is installed for the right target.
-ifeq ($(shell jiri v23-profile list | grep dart),)
-	$(error dart profile not installed. Run "jiri v23-profile install dart")
+ifeq ($(shell jiri profile list | grep v23:dart),)
+	$(error dart profile not installed. Run "jiri profile install v23:dart")
 endif
-ifeq ($(shell jiri v23-profile list | grep $(MOJO_PROFILE)),)
-	$(error profile $(MOJO_PROFILE) not installed. Run "jiri v23-profile install --target=$(TARGET) $(MOJO_PROFILE)")
+ifeq ($(shell jiri profile list | grep $(MOJO_PROFILE)),)
+	$(error profile $(MOJO_PROFILE) not installed. Run "jiri profile install --target=$(TARGET) $(MOJO_PROFILE)")
 endif
