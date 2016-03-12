@@ -1,0 +1,9 @@
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDir System.getenv('MOJO_SDK') + '/src/mojo/public/java/system/src'
+        }
+    }
+}

@@ -1,0 +1,28 @@
+apply plugin: 'java'
+
+// TODO(jhahn): Use compileOnly once we upgrade gradle to 2.12.
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/src"
+        }
+
+        compileClasspath += configurations.provided
+  }
+}
+
+fileTree(dir: System.getenv('MOJO_SDK') + '/gen/mojo/public/interfaces/network', include: '*.mojom.srcjar').each {File file ->
+    copy {
+        from zipTree(file)
+        into "$buildDir/src"
+    }
+}
+
+dependencies {
+    provided project(':mojo:system')
+    provided project(':mojo:bindings')
+}

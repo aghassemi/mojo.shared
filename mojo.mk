@@ -89,7 +89,7 @@ endef
 # Runs mojo app tests.
 # $1 is apptest list filename.
 define MOJO_APPTEST
-	$(MOJO_DEVTOOLS)/mojo_test --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) $(MOJO_ANDROID_FLAGS) $1
+	$(MOJO_DEVTOOLS)/mojo_test --config-file $(CURDIR)/mojoconfig --shell-path $(MOJO_SHELL) $(MOJO_SHELL_FLAGS) --disable-cache $(MOJO_ANDROID_FLAGS) $1
 endef
 
 .PHONY: mojo-env-check
