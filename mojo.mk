@@ -5,7 +5,7 @@
 SHELL := /bin/bash -euo pipefail
 
 ifdef USE_MOJO_DEV_PROFILE
-	MOJO_PROFILE := v23:mojo-dev
+	MOJO_PROFILE := v23:mojodev
 else
 	MOJO_PROFILE := v23:mojo
 endif
